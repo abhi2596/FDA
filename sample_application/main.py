@@ -10,7 +10,7 @@ if len(uploaded_files) != 0:
     for file in uploaded_files:
         with open(f"tax_declaration_files/{file.name}","wb") as f:
             f.write(file.read())
-    response = tax_declaration_summary("files")
+    response = tax_declaration_summary("tax_declaration_files")
     if response is not None:
         st.markdown(response)
     shutil.rmtree("tax_declaration_files")
