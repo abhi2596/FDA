@@ -6,7 +6,7 @@ st.title("Tax Declaration Form")
 uploaded_files = st.file_uploader("Upload a Tax Declaration Form",accept_multiple_files=True)
 
 if len(uploaded_files) != 0:
-    os.mkdir("tax_declaration_files")
+    os.makedirs("tax_declaration_files",exist_ok=True)
     for file in uploaded_files:
         with open(f"tax_declaration_files/{file.name}","wb") as f:
             f.write(file.read())
