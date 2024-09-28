@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "sample-application"
+version = "0.1.0"
+description = ""
+authors = ["abhi2596 <abhijeetchintakunta@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.9.7 || >3.9.7,<4.0"
+streamlit = "^1.38.0"
+openai = "^1.50.2"
+llama-parse = "^0.5.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
