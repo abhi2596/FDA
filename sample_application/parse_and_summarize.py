@@ -1,9 +1,7 @@
 from llama_parse import LlamaParse 
 import os,tiktoken,requests,nest_asyncio
-from dotenv import load_dotenv 
 import streamlit as st 
 
-load_dotenv()
 nest_asyncio.apply()
 
 
@@ -19,7 +17,7 @@ def get_token_count(text):
     return len(encode.encode(text)) 
 
 def summarize(prompt,max_tokens=300):
-    api_key = os.environ["OPENAI_API_KEY"]
+    api_key = st.secrets["OPENAI_API_KEY"]
     headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {api_key}"
@@ -41,7 +39,7 @@ def summarize(prompt,max_tokens=300):
 
 def tax_declaration_summary(tax_declaration_path):
     with st.spinner("Parsing PDF files"):
-        parser = LlamaParse()
+        parser = LlamaParse(api_key=st.secrets["LLAMA_CLOUD_API_KEY"])
         tax_summary = []
         documents = parser.load_data([os.path.join(tax_declaration_path,file_name) for file_name in os.listdir(tax_declaration_path)])
         text = ""
