@@ -1,10 +1,8 @@
 from llama_parse import LlamaParse 
 import os, tiktoken, requests, nest_asyncio,shutil
 import streamlit as st 
-from dotenv import load_dotenv
 
 nest_asyncio.apply()
-load_dotenv('prompts.env')
 
 def token_count_and_summarize(prompt,max_tokens=300):
     num_of_tokens = get_token_count(prompt)
@@ -49,12 +47,12 @@ def document_summary(directory_name,document_type):
     with st.spinner("Summarizing Documents"):
         summary_of_documents = ""
         for document in document_text:
-            prompt = os.getenv(f'{document_type}_PROMPT').format(text=document)
+            prompt = st.secrets.get(f'{document_type}_PROMPT').format(text=document)
             summary_of_documents += token_count_and_summarize(prompt) + "\n"
             print(summary_of_documents)
 
     with st.spinner("Final Summary of Documents"):
-        summary_prompt = os.getenv("SUMMARY_PROMPT").format(summary_of_documents=summary_of_documents,document_type=document_type)
+        summary_prompt = st.secrets.get("SUMMARY_PROMPT").format(summary_of_documents=summary_of_documents,document_type=document_type)
         document_summary = token_count_and_summarize(summary_prompt)
     return document_summary
 
