@@ -49,7 +49,6 @@ def document_summary(directory_name,document_type):
         for document in document_text:
             prompt = st.secrets.get(f'{document_type}_PROMPT').format(text=document)
             summary_of_documents += token_count_and_summarize(prompt) + "\n"
-            print(summary_of_documents)
 
     with st.spinner("Final Summary of Documents"):
         summary_prompt = st.secrets.get("SUMMARY_PROMPT").format(summary_of_documents=summary_of_documents,document_type=document_type)
