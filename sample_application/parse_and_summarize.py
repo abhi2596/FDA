@@ -45,15 +45,16 @@ def document_summary(directory_name,document_type):
             document_text.append("".join([document.text for document in documents]))
     
     with st.spinner("Summarizing Documents"):
-        summary_of_documents = ""
+        summary_of_documents = []
         for document in document_text:
             prompt = st.secrets.get(f'{document_type}_PROMPT').format(text=document)
-            summary_of_documents += token_count_and_summarize(prompt) + "\n"
+            summary_of_documents.append(token_count_and_summarize(prompt))
 
+    total_summary = "\n".join(summary_of_documents)
     with st.spinner("Final Summary of Documents"):
-        summary_prompt = st.secrets.get("SUMMARY_PROMPT").format(summary_of_documents=summary_of_documents,document_type=document_type)
+        summary_prompt = st.secrets.get("SUMMARY_PROMPT").format(summary_of_documents=total_summary,document_type=document_type)
         document_summary = token_count_and_summarize(summary_prompt)
-    return document_summary
+    return document_summary,summary_of_documents
 
 if __name__ == "__main__":
     import argparse 
