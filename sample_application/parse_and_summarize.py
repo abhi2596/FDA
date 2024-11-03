@@ -26,6 +26,7 @@ def summarize(prompt,img_prompt=None):
                 "content": user_prompt
             }
         ],
+        "temperature":0
     }
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response = response.json()
