@@ -26,7 +26,10 @@ def main():
 def page_selector(page):
     uploaded_files = st.file_uploader(f"Upload a {page} Form", accept_multiple_files=True)
     if len(uploaded_files) != 0:
-        page = page.replace(" ", "_").upper()
+        if page == "CMR/Waybills":
+            page = page.replace("/","_").upper()
+        else:
+            page = page.replace(" ", "_").upper()
         directory_name = f"{page}_files"
         os.makedirs(directory_name, exist_ok=True)
         

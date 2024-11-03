@@ -1,59 +1,53 @@
 from llama_parse import LlamaParse 
-import os, tiktoken, requests, nest_asyncio,shutil
+import os, tiktoken, requests, nest_asyncio,filetype,shutil
 import streamlit as st 
+from pdf_to_image import convert_pdf_to_image,get_image_prompt
 
 nest_asyncio.apply()
 
-def token_count_and_summarize(prompt,max_tokens=300):
-    num_of_tokens = get_token_count(prompt)
-    if num_of_tokens < 128000:
-        return summarize(prompt,max_tokens)
-    else:
-        pass
-
-def get_token_count(text):
-    encode = tiktoken.encoding_for_model("gpt-4o-mini") 
-    return len(encode.encode(text)) 
-
-def summarize(prompt,max_tokens=300):
+def summarize(prompt,img_prompt=None):
     api_key = st.secrets["OPENAI_API_KEY"]
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
     }
+    user_prompt = [{
+        "type":"text",
+        "text":prompt
+    }]
+    if img_prompt is not None:
+        user_prompt.extend(img_prompt)
     payload = {
-        "model": "gpt-4o-mini",
+        "model": "gpt-4o",
         "messages": [
             {"role":"system","content":"You are a bank compliance officer"},
             {
                 "role": "user",
-                "content": prompt
+                "content": user_prompt
             }
         ],
-        "max_tokens": max_tokens
     }
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response = response.json()
     return response["choices"][0]["message"]["content"]
 
 def document_summary(directory_name,document_type):
-    with st.spinner("Parsing PDF files"):
-        parser = LlamaParse(api_key=st.secrets["LLAMA_CLOUD_API_KEY"])
-        document_text = []
-        for file_name in sorted(os.listdir(directory_name)):
-            documents = parser.load_data([os.path.join(directory_name, file_name)])
-            document_text.append("".join([document.text for document in documents]))
-    
+    summary_of_documents = []
     with st.spinner("Summarizing Documents"):
-        summary_of_documents = []
-        for document in document_text:
-            prompt = st.secrets.get(f'{document_type}_PROMPT').format(text=document)
-            summary_of_documents.append(token_count_and_summarize(prompt))
-
+        os.makedirs("img_files",exist_ok=True)
+        for file_name in sorted(os.listdir(directory_name)):
+            if file_name.endswith(".pdf"):
+                img_dir = convert_pdf_to_image(os.path.join(directory_name,file_name))
+                img_prompt = get_image_prompt(img_dir)
+            elif filetype.is_image(os.path.join(directory_name,file_name)):
+                img_prompt = get_image_prompt(os.path.join(directory_name,file_name))
+            prompt = st.secrets.get(f'{document_type}_PROMPT')
+            summary_of_documents.append(summarize(prompt,img_prompt))
+        shutil.rmtree("img_files")
     total_summary = "\n".join(summary_of_documents)
     with st.spinner("Final Summary of Documents"):
         summary_prompt = st.secrets.get("SUMMARY_PROMPT").format(summary_of_documents=total_summary,document_type=document_type)
-        document_summary = token_count_and_summarize(summary_prompt)
+        document_summary = summarize(summary_prompt)
     return document_summary,summary_of_documents
 
 if __name__ == "__main__":
