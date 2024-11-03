@@ -5,25 +5,27 @@ from pdf_to_image import convert_pdf_to_image,get_image_prompt
 
 nest_asyncio.apply()
 
-def summarize(prompt,system_prompt=None,img_prompt=None):
+def summarize(prompt,img_prompt=None):
     api_key = st.secrets["OPENAI_API_KEY"]
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
     }
+    user_prompt = [{
+        "type":"text",
+        "text":prompt
+    }]
     if img_prompt is not None:
-        prompt = [{
-            "type":"text",
-            "text":prompt
-        }]
-        prompt.extend(img_prompt)
-    messages = []
-    if system_prompt is not None:
-        messages.append({"role":"system","content":prompt})
-    messages.append({"role":"user","content":prompt})
+        user_prompt.extend(img_prompt)
     payload = {
         "model": "gpt-4o",
-        "messages": messages,
+        "messages": [
+            {"role":"system","content":"You are a bank compliance officer"},
+            {
+                "role": "user",
+                "content": user_prompt
+            }
+        ],
         "temperature":0
     }
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
@@ -40,9 +42,8 @@ def document_summary(directory_name,document_type):
                 img_prompt = get_image_prompt(img_dir)
             elif filetype.is_image(os.path.join(directory_name,file_name)):
                 img_prompt = get_image_prompt(os.path.join(directory_name,file_name))
-            system_prompt = st.secrets.get(f'{document_type}_PROMPT')
-            prompt = f"Extract the data in this {document_type} and output in markdown format"
-            summary_of_documents.append(summarize(prompt,system_prompt,img_prompt))
+            prompt = st.secrets.get(f'{document_type}_PROMPT')
+            summary_of_documents.append(summarize(prompt,img_prompt))
         shutil.rmtree("img_files")
     total_summary = "\n".join(summary_of_documents)
     with st.spinner("Final Summary of Documents"):

@@ -20,13 +20,13 @@ def get_image_prompt(file_path):
             img_prompt.append({
                 "type": "image_url",
                 "image_url": {
-                    "url": f"data:image/jpeg;base64,{encode_image(os.path.join(file_path,file))}"
+                    "url": f"data:image/jpeg;base64,{encode_image(os.path.join(file_path,file))}","detail":"low"
             }})
     else:
         img_prompt = [{
             "type":"image_url",
             "image_url": {
-                "url": f"data:image/jpeg,base64,{encode_image(file_path)}"
+                "url": f"data:image/jpeg,base64,{encode_image(file_path)}","detail":"low"
             }
         }]
     return img_prompt
